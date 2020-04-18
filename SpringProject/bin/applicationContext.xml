@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- 这里的class不需要写后缀名 -->
+	<bean id="student" class="org.wangxin.entity.Student">
+		<!-- 这里属性不是复数，而是单数 -->
+		<property name="stuNo" value="1"></property>
+		<property name="stuName" value="emily"></property>
+		<property name="stuAge" value="17"></property>
+	</bean>
+	
+</beans>
