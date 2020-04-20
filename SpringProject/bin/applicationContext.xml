@@ -1,14 +1,168 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
 	
-	<!-- 这里的class不需要写后缀名 -->
-	<bean id="student" class="org.wangxin.entity.Student">
+	<!-- 使用注解配置扫描器 -->
+	<context:component-scan base-package="org.wangxin.Impl,org.wangxin.aop"></context:component-scan>
+	
+	<!-- EP1 第一个springProject 获取applicationContext里的内容 -->
+	<!-- 这里的class不需要写后缀名-->
+	<bean id="student" class="org.wangxin.entity.Student"> 
 		<!-- 这里属性不是复数，而是单数 -->
 		<property name="stuNo" value="1"></property>
-		<property name="stuName" value="emily"></property>
+		<property name="stuName" value="peach"></property>
 		<property name="stuAge" value="17"></property>
 	</bean>
+	
+	<!-- 配置aop -->
+	<!-- 前置通知 -->
+	<aop:config>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(org.wangxin.entity.Student) )" id="pointCut"/>
+		<aop:advisor advice-ref="logBefore" pointcut-ref="pointCut"/>
+	</aop:config>
+	
+	<!-- 后置通知  匹配一切类型的方法参数 -->
+	<aop:config>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(..) )" id="pointCut2"/>
+		<aop:advisor advice-ref="logAfter" pointcut-ref="pointCut2"/>
+	</aop:config>
+	
+	<!-- 异常通知 -->
+	<aop:config>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(org.wangxin.entity.Student) )" id="pointCut3"/>
+		<aop:advisor advice-ref="logException" pointcut-ref="pointCut3"/>
+	</aop:config>
+	
+	<!-- 环绕通知 -->
+	<aop:config>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(org.wangxin.entity.Student) )" id="pointCut4"/>
+		<aop:advisor advice-ref="logAround" pointcut-ref="pointCut4"/>
+	</aop:config>
+	
+	<!-- 开启注解对AOP的支持 -->
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	
+	
+	<aop:config>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(org.wangxin.entity.Student) )" id="pointcut5"/>
+		<aop:pointcut expression="execution(public void org.wangxin.Impl.StudentServiceImpl.addStudent(org.wangxin.entity.Student) )" id="pointcut6"/>
+		<aop:aspect ref="logSchema">
+			<!-- 个人猜测config中已经配置了切点 而下面还需要指定切点的原因是config中可以配置多个切点？ -->
+			<aop:before method="before" pointcut-ref="pointcut5"/>
+			<!-- 方法中的出现的参数需要指定  例如后置的returnValue 和 异常的ne  但是环绕中不指定-->
+			<aop:after-returning method="afterReturning" returning="returnValue" pointcut-ref="pointcut5"/>
+			<aop:after-throwing method="whenException" pointcut-ref="pointcut5" throwing="ne"/>
+			<aop:around method="around" pointcut-ref="pointcut5"/>
+		</aop:aspect>
+	</aop:config>
+	
+	<!--
+	<bean id="javaCourse" class="org.wangxin.newInstance.JavaCourse">
+	</bean>
+	<bean id="htmlCourse" class="org.wangxin.newInstance.HtmlCourse"></bean>
+	-->
+	
+	
+	<!-- 第一种方式 通过set注入
+	<bean id="teacher" class="org.wangxin.entity.Teacher">
+	<property name="name" value="emily"></property>
+	<property name="age" value="23"></property>
+	</bean>
+	
+	<bean id="course" class="org.wangxin.entity.Course">
+	<property name="courName" value="java"></property>
+	<property name="courHour" value="50"></property>
+	<property name="courTeacher" ref="teacher"></property>
+	</bean>
+	-->
+	
+	
+	<!-- 第二种方式 通过构造器注入
+	<bean id="teacher" class="org.wangxin.entity.Teacher">
+	<constructor-arg value="apple"> </constructor-arg>
+	<constructor-arg value="50"></constructor-arg>
+	</bean>
+	
+	<bean id="course" class="org.wangxin.entity.Course">
+	<constructor-arg value="java"></constructor-arg>
+	<constructor-arg value="50"></constructor-arg>
+	<constructor-arg ref="teacher"></constructor-arg>
+	</bean>
+	-->
+	
+	
+	<!-- 第三种方式 通过p命名空间注入
+	<bean id="teacher" class="org.wangxin.entity.Teacher" p:name="banana" p:age="19">
+	</bean>
+	
+	<bean id="course" class="org.wangxin.entity.Course" p:courName="html" p:courHour="90" p:courTeacher-ref="teacher">
+	</bean>
+	-->
+	
+	
+	<!-- 各种集合方式的设值
+	<bean id="collections" class="org.wangxin.entity.AllCollectionType">
+	
+		<property name="list">
+			<list>
+				<value>apple</value>
+				<value>pear</value>
+				<value>strawberry</value>
+			</list>
+		</property>
+		
+		<property name="string">
+			<array>
+				<value>pineapple</value>			
+				<value>banana</value>			
+				<value>blueberry</value>			
+			</array>
+		</property>
+		
+		<property name="set">
+			<set>
+				<value>kiwi berry</value>
+				<value>avocado</value>
+				<value>plum</value>
+			</set>
+		</property>
+		
+		<property name="map">
+			<map>
+			 	<entry>
+			 		<key>
+			 			<value>peach</value>
+			 		</key>
+			 		<value>桃子</value>
+			 	</entry>
+			 	<entry>
+			 		<key>
+			 			<value>nut</value>
+			 		</key>
+			 		<value>坚果</value>
+			 	</entry>
+			 	<entry>
+			 		<key>
+			 			<value>watermelon</value>
+			 		</key>
+			 		<value>西瓜</value>
+			 	</entry>
+			</map>
+		</property>
+		
+		<property name="pros">
+			<props>
+				<prop key="emily">艾米莉</prop>
+				<prop key="Bob">鲍勃</prop>
+			</props>
+		</property>
+	</bean>
+	 -->
 	
 </beans>
